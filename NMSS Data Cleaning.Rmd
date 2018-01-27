@@ -1,0 +1,279 @@
+---
+title: "Cleaning NMSS Data"
+author: "Konrad Miziolek"
+date: "January 26, 2018"
+output: html_document
+---
+
+Loading libraries: 
+```{r}
+library(readr)
+library(readxl)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+```
+
+#Cleaning NMSS Data
+
+## Cleaning donations data for 2013-2017: 
+
+Reading in the data:
+
+```{r}
+donations2013 <- read.csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2013 Bike Donations.csv")
+donations2014 <- read.csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2014 Bike Donations.csv")
+donations2015 <- read.csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2015 Bike Donations.csv")
+donations2016 <- read.csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2016 Bike Donations.csv")
+donations2017 <- read.csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2017 Bike Donations.csv")
+
+
+
+```
+
+Comparing column names to make sure the data is in the right order and all fields are the same: 
+
+```{r}
+cols2013 <- colnames(donations2013)
+cols2014 <- colnames(donations2014)
+cols2015 <- colnames(donations2015)
+cols2016 <- colnames(donations2016)
+cols2017 <- colnames(donations2017)
+
+
+identical(cols2013, cols2014)
+identical(cols2013, cols2015)
+identical(cols2013, cols2016)
+identical(cols2013, cols2017)
+
+
+remove(cols2013, cols2014, cols2015, cols2016, cols2017)
+```
+
+Changing some columns to factors: 
+
+```{r}
+cols <- c(1, 2, 3, 6, 7, 10:19, 21:32, 35, 36, 38, 39, 44:49)
+donations2013[cols] <- lapply(donations2013[cols], factor)
+donations2014[cols] <- lapply(donations2014[cols], factor)
+donations2015[cols] <- lapply(donations2015[cols], factor)
+donations2016[cols] <- lapply(donations2016[cols], factor)
+donations2017[cols] <- lapply(donations2017[cols], factor)
+```
+
+
+
+## Refactoring certain columns: 
+
+### Donor Gender: 
+
+```{r}
+summary(donations2013$Donor.Gender)
+levels(donations2013$Donor.Gender) <- list(Female=c("Female", "F", "Feiale"), Male=c("Male", "M", "Iale"))
+summary(donations2013$Donor.Gender)
+
+
+summary(donations2014$Donor.Gender)
+levels(donations2014$Donor.Gender) <- list(Female=c("Female", "F", "Feiale"), Male=c("Male"))
+summary(donations2014$Donor.Gender)
+
+
+summary(donations2015$Donor.Gender)
+levels(donations2015$Donor.Gender) <- list(Female=c("Female", "F", "Femala"), Male=c("Male"))
+summary(donations2015$Donor.Gender)
+
+
+summary(donations2016$Donor.Gender)
+levels(donations2016$Donor.Gender) <- list(Female=c("Female", "F", "Femala"), Male=c("Male"))
+summary(donations2016$Donor.Gender)
+
+
+summary(donations2017$Donor.Gender)
+levels(donations2017$Donor.Gender) <- list(Female=c("Female", "F", "Femala", "Famale"), Male=c("Male", "M"))
+summary(donations2017$Donor.Gender)
+
+```
+
+### Prior participants:
+
+```{r}
+summary(donations2013$Is.Prior.Participant)
+levels(donations2013$Is.Prior.Participant) <- list(Yes = c("Yes"))
+summary(donations2013$Is.Prior.Participant)
+
+
+summary(donations2014$Is.Prior.Participant)
+levels(donations2014$Is.Prior.Participant) <- list(Yes = "Yes")
+summary(donations2014$Is.Prior.Participant)
+
+
+summary(donations2015$Is.Prior.Participant)
+levels(donations2015$Is.Prior.Participant) <- list(Yes = "Yes")
+summary(donations2015$Is.Prior.Participant)
+
+
+summary(donations2016$Is.Prior.Participant)
+levels(donations2016$Is.Prior.Participant) <- list(Yes = "Yes")
+summary(donations2016$Is.Prior.Participant)
+
+
+summary(donations2017$Is.Prior.Participant)
+levels(donations2017$Is.Prior.Participant) <- list(Yes = "Yes")
+summary(donations2017$Is.Prior.Participant)
+
+```
+
+
+### Is Team Captain
+
+```{r}
+summary(donations2013$Is.Team.Captain)
+levels(donations2013$Is.Team.Captain) <- list(Yes ="TRUE", No = "FALSE")
+summary(donations2013$Is.Team.Captain)
+
+
+summary(donations2014$Is.Team.Captain)
+levels(donations2014$Is.Team.Captain) <- list(Yes = c("TRUE", "PRUE"), No = "FALSE")
+summary(donations2014$Is.Team.Captain)
+
+
+summary(donations2015$Is.Team.Captain)
+levels(donations2015$Is.Team.Captain) <- list(Yes = "TRUE", No = c("FALSE", "BALSE"))
+summary(donations2015$Is.Team.Captain)
+
+summary(donations2016$Is.Team.Captain)
+levels(donations2016$Is.Team.Captain) <- list(Yes = c("TRUE", "PRUE"), No = "FALSE")
+summary(donations2016$Is.Team.Captain)
+
+summary(donations2017$Is.Team.Captain)
+levels(donations2017$Is.Team.Captain) <- list(Yes = c("TRUE"), No = c("FALSE", "BALSE", "FALSA"))
+summary(donations2017$Is.Team.Captain)
+
+```
+
+### Gift Payment Method
+
+```{r}
+summary(donations2013$Gift.Payment.Method)
+levels(donations2013$Gift.Payment.Method) <- list(Cash = "Cash", Check= "Check", `Credit Card` = "Credit Card")
+summary(donations2013$Gift.Payment.Method)
+
+
+summary(donations2014$Gift.Payment.Method)
+levels(donations2014$Gift.Payment.Method) <- list(Cash = "Cash", Check= "Check", `Credit Card` = "Credit Card")
+summary(donations2014$Gift.Payment.Method)
+
+
+summary(donations2015$Gift.Payment.Method)
+# No NAs or anything to refactor
+
+summary(donations2016$Gift.Payment.Method)
+levels(donations2016$Gift.Payment.Method) <- list(Cash = "Cash", Check= "Check", `Credit Card` = c("Credit Card", "Credit Car"))
+summary(donations2016$Gift.Payment.Method)
+
+
+summary(donations2017$Gift.Payment.Method)
+levels(donations2017$Gift.Payment.Method) <- list(Cash = "Cash", Check= "Check", `Credit Card` = c("Credit Card", "Credit Car"))
+summary(donations2017$Gift.Payment.Method)
+
+
+```
+
+### Gift Type
+
+```{r}
+summary(donations2013$Gift.Type)
+levels(donations2013$Gift.Type) <- list(Offline=c("offline", "ofbline"), Online="online")
+summary(donations2013$Gift.Type)
+
+
+summary(donations2014$Gift.Type)
+levels(donations2014$Gift.Type) <- list(Offline="offline", Online=c("online", "ojline"))
+summary(donations2014$Gift.Type)
+
+
+summary(donations2015$Gift.Type)
+levels(donations2015$Gift.Type) <- list(Offline="offline", Online="online")
+summary(donations2015$Gift.Type)
+
+
+summary(donations2016$Gift.Type)
+levels(donations2016$Gift.Type) <- list(Offline="offline", Online=c("online", "onhine", "onlina"))
+summary(donations2016$Gift.Type)
+             
+
+summary(donations2017$Gift.Type)
+levels(donations2017$Gift.Type) <- list(Offline="offline", Online=c("online", "ojline", "onlina"))
+summary(donations2017$Gift.Type)
+
+```
+
+### Dealing with dates
+
+```{r}
+str(donations2013$Date.Recorded)
+donations2013$Date.Recorded <- as.character(donations2013$Date.Recorded)
+str(donations2013$Date.Recorded)
+
+
+str(donations2014$Date.Recorded)
+donations2014$Date.Recorded <- as.character(donations2014$Date.Recorded)
+str(donations2014$Date.Recorded)
+
+
+str(donations2015$Date.Recorded)
+donations2015$Date.Recorded <- as.character(donations2015$Date.Recorded)
+str(donations2015$Date.Recorded)
+
+
+str(donations2016$Date.Recorded)
+donations2016$Date.Recorded <- as.character(donations2016$Date.Recorded)
+str(donations2016$Date.Recorded)
+
+
+str(donations2017$Date.Recorded)
+donations2017$Date.Recorded <- as.character(donations2017$Date.Recorded)
+str(donations2017$Date.Recorded)
+
+```
+
+
+
+
+
+```{r}
+summary(donations2013)
+```
+
+
+
+
+
+
+
+
+
+
+EDA
+
+```{r}
+ggplot(data = subset(donations2013, !is.na(Donor.Gender))) + 
+  geom_bar(aes(Donor.Gender, fill = Donor.Gender), na.rm = TRUE) + 
+  xlab("Donor Gender") + 
+  ylab("Count") + 
+  ggtitle("2013 NMS Participants by gender")
+
+ggplot(data = subset(donations2013, !is.na(Gift.Payment.Method))) + 
+  geom_bar(aes(Gift.Payment.Method, fill = Donor.Gender)) + 
+  xlab("Gift Payment Method") + 
+  ylab("Dollars") + 
+  ggtitle("2013 NMS Gift Payment Method Types by Gender")
+
+
+
+```
+
+
+
+
+
