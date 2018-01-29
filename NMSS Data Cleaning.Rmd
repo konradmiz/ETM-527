@@ -20,11 +20,11 @@ library(ggplot2)
 Reading in the data:
 
 ```{r}
-donations2013 <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2013 Bike Donations.csv")
-donations2014 <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2014 Bike Donations.csv")
-donations2015 <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2015 Bike Donations.csv")
-donations2016 <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2016 Bike Donations.csv")
-donations2017 <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2017 Bike Donations.csv")
+donations2013 <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2013 Bike Donations Date Fixed.csv")
+donations2014 <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2014 Bike Donations Date Fixed.csv")
+donations2015 <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2015 Bike Donations Date Fixed.csv")
+donations2016 <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2016 Bike Donations Date Fixed.csv")
+donations2017 <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Donations\\2017 Bike Donations Date Fixed.csv")
 
 ```
 
@@ -59,9 +59,9 @@ donations2017[,cols] <- lapply(donations2017[,cols], factor)
 ```
 
 
-## Refactoring certain columns: 
+### Refactoring certain columns: 
 
-### Donor Gender: 
+#### Donor Gender: 
 
 ```{r}
 summary(donations2013$`Donor Gender`)
@@ -204,43 +204,51 @@ summary(donations2017$`Gift Type`)
 
 ```
 
-## Dealing with dates
+### Dealing with dates
 
-Converting to chars: 
+* Date format was changed in Excel * to eg 08/12/13 to enable easy conversion of dates. 
 
 ```{r}
 #Since each dataset is the same, can identify all date fields from just 2013 data
 date_cols <- which(names(donations2013)%in%c("Event Date", "Date Recorded", "Donor Opt out Date", "Registration Date", "Team Creation Date"))
 
-donations2013[, date_cols] <- as.character(donations2013[, date_cols])
-donations2014[, date_cols] <- as.character(donations2014[, date_cols])
-donations2015[, date_cols] <- as.character(donations2015[, date_cols])
-donations2016[, date_cols] <- as.character(donations2016[, date_cols])
-donations2017[, date_cols] <- as.character(donations2017[, date_cols])
-
-
+donations2013[, date_cols] <- lapply(donations2013[, date_cols], as.Date, "%m/%d/%y")
+donations2014[, date_cols] <- lapply(donations2014[, date_cols], as.Date, "%m/%d/%y")
+donations2015[, date_cols] <- lapply(donations2015[, date_cols], as.Date, "%m/%d/%y")
+donations2016[, date_cols] <- lapply(donations2016[, date_cols], as.Date, "%m/%d/%y")
+donations2017[, date_cols] <- lapply(donations2017[, date_cols], as.Date, "%m/%d/%y")
 ```
 
 
-Splitting into date and time of day (can just get rid of the time of day for now)
+
+### Data Summary
 
 ```{r}
+summary(donations2013)
 
-  
 ```
 
-
-Reformatting date (R doesn't recognize dates without a leading 0, IE 05/06/2007 is valid but 5/6/2007 is not)
+### Writing out Formatted Donations Data
 
 ```{r}
+write_excel_csv(donations2013, "C:\\Users\\Konrad\\Desktop\\ETM 527\\Konrad Cleaned Donations\\donations2013.csv")
+
+write_excel_csv(donations2014, "C:\\Users\\Konrad\\Desktop\\ETM 527\\Konrad Cleaned Donations\\donations2014.csv")
+
+write_excel_csv(donations2015, "C:\\Users\\Konrad\\Desktop\\ETM 527\\Konrad Cleaned Donations\\donations2015.csv")
+
+write_excel_csv(donations2016, "C:\\Users\\Konrad\\Desktop\\ETM 527\\Konrad Cleaned Donations\\donations2016.csv")
+
+write_excel_csv(donations2017, "C:\\Users\\Konrad\\Desktop\\ETM 527\\Konrad Cleaned Donations\\donations2017.csv")
+
 
 
 ```
 
 
-## EDA (ignore)
+### EDA (ignore)
 
-### Summarizing data for EDA
+#### Summarizing data for EDA
 ```{r}
 gen_2013 <- summary(donations2013$`Donor Gender`)
 gen_2014 <- summary(donations2014$`Donor Gender`)
@@ -297,10 +305,6 @@ add_donations <- tibble(2013:2017,
 
 ```
 
-
-
-
-
 ```{r}
 ggplot(data = subset(donations2013, !is.na(`Donor Gender`))) + 
   geom_bar(aes(`Donor Gender`, fill = `Donor Gender`), na.rm = TRUE) + 
@@ -319,6 +323,36 @@ ggplot(data = subset(donations2013, !is.na(`Gift Payment Method`))) +
 ```
 
 
+## Cleaning Bike Teams Data
+
+```{r}
+teams <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Bike Teams\\2013-2017 Bike Teams Date Format Fixed.csv")
+```
+
+```{r}
+summary(teams)
+factor_cols <- c(1:5, 7, 8, 10, 11, 20:22, 26)
+teams[ ,factor_cols] <- lapply(teams[ ,factor_cols], factor)
+
+# Removed time from team creation date and Event Date (in Excel)!!! 
+
+teams$`Team Creation Date` <- as.Date(teams$`Team Creation Date`, format = '%m/%d/%y')
+teams$`Event Date` <- as.Date(teams$`Event Date`, format = '%m/%d/%y')
+
+summary(teams$`Event Type`)
+
+summary(teams$`Team Division`)
+
+levels(teams$`Team Division`) <- list(Association = "Association", Brewery="Beer/Brewery", `Bike Club`="Bike Club", `Bike Shop` = c("Bike Shop", "Bike Shops"), `Civic Team` = "Civic Team", `Club/Organization` = "Club/Organization", Corporate = c("Corporate", "Corporation"), `Family/Friends` = c("Family and Friends", "Family/Friends", "Frien`s and Family", "Friend and Family", "Friends and Family"), Ohana = "Ohana", `Ohana/Friends` = "Ohana and Friends", Open = "Open", `Open Team` = "Open Team", Organization = c("Organization", "Organization (Clubs, Civic Groups, etc.)", "Organization (Clubs; Civic Groups; etc.)", "Organization (Clubs; Civic Groups; Place of Worship; etc.)"), Other = "Other", `Place of Worship` = c("Place of Worship", "Place of worship", "Religious"), School = "School", `Small Business` = "Small Business", `Volunteer Group` = "Volunteer Group")
+
+```
+
+```{r}
+summary(teams$`Captain Email Domain`)
+summary(teams$Company)
+summary(teams$`Team Name`)
+summary(teams$`Number of Participants`)
+```
 
 
 
