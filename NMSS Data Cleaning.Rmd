@@ -8,14 +8,18 @@ output: html_document
 Loading libraries: 
 ```{r}
 library(readr)
+library(plyr)
 library(tidyr)
+library(lubridate)
+library(tidyverse)
 library(dplyr)
 library(ggplot2)
+
 ```
 
 #Cleaning NMSS Data
 
-## Cleaning donations data for 2013-2017: 
+## Konrad & Ramya: Cleaning donations data for 2013-2017: 
 
 Reading in the data:
 
@@ -64,58 +68,58 @@ donations2017[,cols] <- lapply(donations2017[,cols], factor)
 #### Donor Gender: 
 
 ```{r}
-summary(donations2013$`Donor Gender`)
+#summary(donations2013$`Donor Gender`)
 levels(donations2013$`Donor Gender`) <- list(Female=c("Female", "F", "Feiale"), Male=c("Male", "M", "Iale"))
-summary(donations2013$`Donor Gender`)
+#summary(donations2013$`Donor Gender`)
 
 
-summary(donations2014$`Donor Gender`)
+#summary(donations2014$`Donor Gender`)
 levels(donations2014$`Donor Gender`) <- list(Female=c("Female", "F", "Feiale"), Male=c("Male"))
-summary(donations2014$`Donor Gender`)
+#summary(donations2014$`Donor Gender`)
 
 
-summary(donations2015$`Donor Gender`)
+#summary(donations2015$`Donor Gender`)
 levels(donations2015$`Donor Gender`) <- list(Female=c("Female", "F", "Femala"), Male=c("Male"))
-summary(donations2015$`Donor Gender`)
+#summary(donations2015$`Donor Gender`)
 
 
-summary(donations2016$`Donor Gender`)
+#summary(donations2016$`Donor Gender`)
 levels(donations2016$`Donor Gender`) <- list(Female=c("Female", "F", "Femala"), Male=c("Male"))
-summary(donations2016$`Donor Gender`)
+#summary(donations2016$`Donor Gender`)
 
 
-summary(donations2017$`Donor Gender`)
+#summary(donations2017$`Donor Gender`)
 levels(donations2017$`Donor Gender`) <- list(Female=c("Female", "F", "Femala", "Famale"), Male=c("Male", "M"))
-summary(donations2017$`Donor Gender`)
+#summary(donations2017$`Donor Gender`)
 
 ```
 
 ### Prior participants:
 
 ```{r}
-summary(donations2013$`Is Prior Participant`)
+#summary(donations2013$`Is Prior Participant`)
 levels(donations2013$`Is Prior Participant`) <- list(Yes = c("Yes"))
-summary(donations2013$`Is Prior Participant`)
+#summary(donations2013$`Is Prior Participant`)
 
 
-summary(donations2014$`Is Prior Participant`)
+#summary(donations2014$`Is Prior Participant`)
 levels(donations2014$`Is Prior Participant`) <- list(Yes = "Yes")
-summary(donations2014$`Is Prior Participant`)
+#summary(donations2014$`Is Prior Participant`)
 
 
-summary(donations2015$`Is Prior Participant`)
+#summary(donations2015$`Is Prior Participant`)
 levels(donations2015$`Is Prior Participant`) <- list(Yes = "Yes")
-summary(donations2015$`Is Prior Participant`)
+#summary(donations2015$`Is Prior Participant`)
 
 
-summary(donations2016$`Is Prior Participant`)
+#summary(donations2016$`Is Prior Participant`)
 levels(donations2016$`Is Prior Participant`) <- list(Yes = "Yes")
-summary(donations2016$`Is Prior Participant`)
+#summary(donations2016$`Is Prior Participant`)
 
 
-summary(donations2017$`Is Prior Participant`)
+#summary(donations2017$`Is Prior Participant`)
 levels(donations2017$`Is Prior Participant`) <- list(Yes = "Yes")
-summary(donations2017$`Is Prior Participant`)
+#summary(donations2017$`Is Prior Participant`)
 
 ```
 
@@ -123,54 +127,54 @@ summary(donations2017$`Is Prior Participant`)
 ### Is Team Captain
 
 ```{r}
-summary(donations2013$`Is Team Captain`)
+#summary(donations2013$`Is Team Captain`)
 levels(donations2013$`Is Team Captain`) <- list(Yes ="TRUE", No = "FALSE")
-summary(donations2013$`Is Team Captain`)
+#summary(donations2013$`Is Team Captain`)
 
 
-summary(donations2014$`Is Team Captain`)
+#summary(donations2014$`Is Team Captain`)
 levels(donations2014$`Is Team Captain`) <- list(Yes = c("TRUE", "PRUE"), No = "FALSE")
-summary(donations2014$`Is Team Captain`)
+#summary(donations2014$`Is Team Captain`)
 
 
-summary(donations2015$`Is Team Captain`)
+#summary(donations2015$`Is Team Captain`)
 levels(donations2015$`Is Team Captain`) <- list(Yes = "TRUE", No = c("FALSE", "BALSE"))
-summary(donations2015$`Is Team Captain`)
+#summary(donations2015$`Is Team Captain`)
 
-summary(donations2016$`Is Team Captain`)
+#summary(donations2016$`Is Team Captain`)
 levels(donations2016$`Is Team Captain`) <- list(Yes = c("TRUE", "PRUE"), No = "FALSE")
-summary(donations2016$`Is Team Captain`)
+#summary(donations2016$`Is Team Captain`)
 
-summary(donations2017$`Is Team Captain`)
+#summary(donations2017$`Is Team Captain`)
 levels(donations2017$`Is Team Captain`) <- list(Yes = c("TRUE"), No = c("FALSE", "BALSE", "FALSA"))
-summary(donations2017$`Is Team Captain`)
+#summary(donations2017$`Is Team Captain`)
 
 ```
 
 ### Gift Payment Method
 
 ```{r}
-summary(donations2013$`Gift Payment Method`)
+#summary(donations2013$`Gift Payment Method`)
 levels(donations2013$`Gift Payment Method`) <- list(Cash = "Cash", Check= "Check", `Credit Card` = "Credit Card")
-summary(donations2013$`Gift Payment Method`)
+#summary(donations2013$`Gift Payment Method`)
 
 
-summary(donations2014$`Gift Payment Method`)
+#summary(donations2014$`Gift Payment Method`)
 levels(donations2014$`Gift Payment Method`) <- list(Cash = "Cash", Check= "Check", `Credit Card` = "Credit Card")
-summary(donations2014$`Gift Payment Method`)
+#summary(donations2014$`Gift Payment Method`)
 
 
-summary(donations2015$`Gift Payment Method`)
+#summary(donations2015$`Gift Payment Method`)
 # No NAs or anything to refactor
 
-summary(donations2016$`Gift Payment Method`)
+#summary(donations2016$`Gift Payment Method`)
 levels(donations2016$`Gift Payment Method`) <- list(Cash = "Cash", Check= "Check", `Credit Card` = c("Credit Card", "Credit Car"))
-summary(donations2016$`Gift Payment Method`)
+#summary(donations2016$`Gift Payment Method`)
 
 
-summary(donations2017$`Gift Payment Method`)
+#summary(donations2017$`Gift Payment Method`)
 levels(donations2017$`Gift Payment Method`) <- list(Cash = "Cash", Check= "Check", `Credit Card` = c("Credit Card", "Credit Car"))
-summary(donations2017$`Gift Payment Method`)
+#summary(donations2017$`Gift Payment Method`)
 
 
 ```
@@ -178,31 +182,43 @@ summary(donations2017$`Gift Payment Method`)
 ### Gift Type
 
 ```{r}
-summary(donations2013$`Gift Type`)
+#summary(donations2013$`Gift Type`)
 levels(donations2013$`Gift Type`) <- list(Offline=c("offline", "ofbline"), Online="online")
-summary(donations2013$`Gift Type`)
+#summary(donations2013$`Gift Type`)
 
 
-summary(donations2014$`Gift Type`)
+#summary(donations2014$`Gift Type`)
 levels(donations2014$`Gift Type`) <- list(Offline="offline", Online=c("online", "ojline"))
-summary(donations2014$`Gift Type`)
+#summary(donations2014$`Gift Type`)
 
 
-summary(donations2015$`Gift Type`)
+#summary(donations2015$`Gift Type`)
 levels(donations2015$`Gift Type`) <- list(Offline="offline", Online="online")
-summary(donations2015$`Gift Type`)
+#summary(donations2015$`Gift Type`)
 
 
-summary(donations2016$`Gift Type`)
+#summary(donations2016$`Gift Type`)
 levels(donations2016$`Gift Type`) <- list(Offline="offline", Online=c("online", "onhine", "onlina"))
-summary(donations2016$`Gift Type`)
+#summary(donations2016$`Gift Type`)
              
 
-summary(donations2017$`Gift Type`)
+#summary(donations2017$`Gift Type`)
 levels(donations2017$`Gift Type`) <- list(Offline="offline", Online=c("online", "ojline", "onlina"))
-summary(donations2017$`Gift Type`)
+#summary(donations2017$`Gift Type`)
 
 ```
+
+### Offline status
+
+```{r}
+summary(donations2013$`Offline Status`)
+summary(donations2014$`Offline Status`)
+summary(donations2015$`Offline Status`)
+summary(donations2016$`Offline Status`)
+levels(donations2016$`Offline Status`)<- list(confirmed = c("confirmed", "confirme`"), `Teamraiser Participant Gift` = c("(Teamraiser Participant Gift", "Teamraiser Participant Gift"))
+summary(donations2017$`Offline Status`)
+```
+
 
 ### Dealing with dates
 
@@ -210,7 +226,7 @@ summary(donations2017$`Gift Type`)
 
 ```{r}
 #Since each dataset is the same, can identify all date fields from just 2013 data
-date_cols <- which(names(donations2013)%in%c("Event Date", "Date Recorded", "Donor Opt out Date", "Registration Date", "Team Creation Date"))
+date_cols <- which(names(donations2013)%in%c("Event Date", "Date Recorded", "Donor Opt-out Date", "Registration Date", "Team Creation Date"))
 
 donations2013[, date_cols] <- lapply(donations2013[, date_cols], as.Date, "%m/%d/%y")
 donations2014[, date_cols] <- lapply(donations2014[, date_cols], as.Date, "%m/%d/%y")
@@ -219,118 +235,28 @@ donations2016[, date_cols] <- lapply(donations2016[, date_cols], as.Date, "%m/%d
 donations2017[, date_cols] <- lapply(donations2017[, date_cols], as.Date, "%m/%d/%y")
 ```
 
-
-
-### Data Summary
+### Writing out Formatted Donations Data to an RDS file
 
 ```{r}
-summary(donations2013)
-
-```
-
-### Writing out Formatted Donations Data
-
-```{r}
-write_excel_csv(donations2013, "C:\\Users\\Konrad\\Desktop\\ETM 527\\Konrad Cleaned Donations\\donations2013.csv")
-
-write_excel_csv(donations2014, "C:\\Users\\Konrad\\Desktop\\ETM 527\\Konrad Cleaned Donations\\donations2014.csv")
-
-write_excel_csv(donations2015, "C:\\Users\\Konrad\\Desktop\\ETM 527\\Konrad Cleaned Donations\\donations2015.csv")
-
-write_excel_csv(donations2016, "C:\\Users\\Konrad\\Desktop\\ETM 527\\Konrad Cleaned Donations\\donations2016.csv")
-
-write_excel_csv(donations2017, "C:\\Users\\Konrad\\Desktop\\ETM 527\\Konrad Cleaned Donations\\donations2017.csv")
-
+saveRDS(donations2013, "C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2013.rds")
+saveRDS(donations2014, "C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2014.rds")
+saveRDS(donations2015, "C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2015.rds")
+saveRDS(donations2016, "C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2016.rds")
+saveRDS(donations2017, "C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2017.rds")
 
 
 ```
 
 
-### EDA (ignore)
 
-#### Summarizing data for EDA
-```{r}
-gen_2013 <- summary(donations2013$`Donor Gender`)
-gen_2014 <- summary(donations2014$`Donor Gender`)
-gen_2015 <- summary(donations2015$`Donor Gender`)
-gen_2016 <- summary(donations2016$`Donor Gender`)
-gen_2017 <- summary(donations2017$`Donor Gender`)
-
-
-gender_year <- tibble(c(2013, 2014, 2015, 2016, 2017), 
-                          c(gen_2013[1], gen_2014[1], gen_2015[1], gen_2016[1], gen_2017[1]), 
-                          c(gen_2013[2], gen_2014[2], gen_2015[2], gen_2016[2], gen_2017[2]), 
-                          c(gen_2013[3], gen_2014[3], gen_2015[3], gen_2016[3], gen_2017[3]))
-                          
-colnames(gender_year) <- c("Year", "Female", "Male", "NA")
-
-
-year_num <- tibble(2013:2017, c(nrow(donations2013), nrow(donations2014), nrow(donations2015), nrow(donations2016), nrow(donations2017)))
-colnames(year_num) <- c("Year", "Number of Participants")
-
-
-tot_gifts2013 <- sum(donations2013$Gift.Amount..., na.rm = TRUE)
-tot_gifts2014 <- sum(donations2014$Gift.Amount..., na.rm = TRUE)
-tot_gifts2015 <- sum(donations2015$Gift.Amount..., na.rm = TRUE)
-tot_gifts2016 <- sum(donations2016$Gift.Amount..., na.rm = TRUE)
-tot_gifts2017 <- sum(donations2017$Gift.Amount..., na.rm = TRUE)
-
-med_gifts2013 <- median(donations2013$Gift.Amount..., na.rm = TRUE)
-med_gifts2014 <- median(donations2014$Gift.Amount..., na.rm = TRUE)
-med_gifts2015 <- median(donations2015$Gift.Amount..., na.rm = TRUE)
-med_gifts2016 <- median(donations2016$Gift.Amount..., na.rm = TRUE)
-med_gifts2017 <- median(donations2017$Gift.Amount..., na.rm = TRUE)
-
-tot_donations <- tibble(2013:2017,
-                            c(tot_gifts2013, tot_gifts2014, tot_gifts2015, tot_gifts2016, tot_gifts2017),
-                            c(med_gifts2013, med_gifts2014, med_gifts2015, med_gifts2016, med_gifts2017))
-
-
-
-add_tot_gifts2013 <- sum(donations2013$Gift.Amount..., na.rm = TRUE)
-add_tot_gifts2014 <- sum(donations2014$Gift.Amount..., na.rm = TRUE)
-add_tot_gifts2015 <- sum(donations2015$Gift.Amount..., na.rm = TRUE)
-add_tot_gifts2016 <- sum(donations2016$Gift.Amount..., na.rm = TRUE)
-add_tot_gifts2017 <- sum(donations2017$Gift.Amount..., na.rm = TRUE)
-
-add_med_gifts2013 <- median(donations2013$Gift.Amount..., na.rm = TRUE)
-add_med_gifts2014 <- median(donations2014$Gift.Amount..., na.rm = TRUE)
-add_med_gifts2015 <- median(donations2015$Gift.Amount..., na.rm = TRUE)
-add_med_gifts2016 <- median(donations2016$Gift.Amount..., na.rm = TRUE)
-add_med_gifts2017 <- median(donations2017$Gift.Amount..., na.rm = TRUE)
-
-add_donations <- tibble(2013:2017,
-  c(add_tot_gifts2013, add_tot_gifts2014, add_tot_gifts2015, add_tot_gifts2016, add_tot_gifts2017), 
-  c(add_med_gifts2013, add_med_gifts2014, add_med_gifts2015, add_med_gifts2016, add_med_gifts2017))
-
-```
-
-```{r}
-ggplot(data = subset(donations2013, !is.na(`Donor Gender`))) + 
-  geom_bar(aes(`Donor Gender`, fill = `Donor Gender`), na.rm = TRUE) + 
-  xlab("Donor Gender") + 
-  ylab("Count") + 
-  ggtitle("2013 NMS Participants by gender")
-
-ggplot(data = subset(donations2013, !is.na(`Gift Payment Method`))) + 
-  geom_bar(aes(`Gift Payment Method`, fill = `Donor Gender`)) + 
-  xlab("Gift Payment Method") + 
-  ylab("Dollars") + 
-  ggtitle("2013 NMS Gift Payment Method Types by Gender")
-
-
-
-```
-
-
-## Cleaning Bike Teams Data
+## Konrad: Cleaning Bike Teams Data
 
 ```{r}
 teams <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Bike Teams\\2013-2017 Bike Teams Date Format Fixed.csv")
 ```
 
 ```{r}
-summary(teams)
+#summary(teams)
 factor_cols <- c(1:5, 7, 8, 10, 11, 20:22, 26)
 teams[ ,factor_cols] <- lapply(teams[ ,factor_cols], factor)
 
@@ -339,8 +265,6 @@ teams[ ,factor_cols] <- lapply(teams[ ,factor_cols], factor)
 teams$`Team Creation Date` <- as.Date(teams$`Team Creation Date`, format = '%m/%d/%y')
 teams$`Event Date` <- as.Date(teams$`Event Date`, format = '%m/%d/%y')
 
-summary(teams$`Event Type`)
-
 summary(teams$`Team Division`)
 
 levels(teams$`Team Division`) <- list(Association = "Association", Brewery="Beer/Brewery", `Bike Club`="Bike Club", `Bike Shop` = c("Bike Shop", "Bike Shops"), `Civic Team` = "Civic Team", `Club/Organization` = "Club/Organization", Corporate = c("Corporate", "Corporation"), `Family/Friends` = c("Family and Friends", "Family/Friends", "Frien`s and Family", "Friend and Family", "Friends and Family"), Ohana = "Ohana", `Ohana/Friends` = "Ohana and Friends", Open = "Open", `Open Team` = "Open Team", Organization = c("Organization", "Organization (Clubs, Civic Groups, etc.)", "Organization (Clubs; Civic Groups; etc.)", "Organization (Clubs; Civic Groups; Place of Worship; etc.)"), Other = "Other", `Place of Worship` = c("Place of Worship", "Place of worship", "Religious"), School = "School", `Small Business` = "Small Business", `Volunteer Group` = "Volunteer Group")
@@ -348,11 +272,130 @@ levels(teams$`Team Division`) <- list(Association = "Association", Brewery="Beer
 ```
 
 ```{r}
-summary(teams$`Captain Email Domain`)
-summary(teams$Company)
-summary(teams$`Team Name`)
-summary(teams$`Number of Participants`)
+#summary(teams$`Event Type`)
+#summary(teams$`Internal Event Name`)
+#summary(teams$`Event ID`)
+#summary(teams$`Team Creation Date`)
+
+#summary(teams$`Captain Email Domain`)
+#summary(teams$Company)
+#summary(teams$`Team Name`)
+#summary(teams$`Number of Participants`)
+```
+
+```{r}
+saveRDS(teams, "C:/Users/Konrad/Desktop/ETM 527/RDS Data/Bike Teams/teams.rds")
 ```
 
 
+
+## Ramya: Cleaning Bike Events
+
+```{r}
+BikeEvents<-read.csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Events\\2013-2017 Bike Events.csv")
+```
+
+
+```{r}
+str(BikeEvents)
+```
+
+```{r}
+levels(BikeEvents$City)
+```
+
+```{r}
+#Cleaning cities
+BikeEvents$City[BikeEvents$City == 'Athens, AL ']<- "Athens"
+
+BikeEvents$City[BikeEvents$City == 'Cherry Hill, NJ with alternate start locations']<-"Cherry Hill"
+#as.factor(BikeEvents$City[BikeEvents$City == 'Ridgeland, MS']<- "Ridgeland")
+
+BikeEvents$City[BikeEvents$City == 'St. Augustine ']<-"St. Augustine"
+
+BikeEvents$City[BikeEvents$City == 'Sioux Falls area']<-"Sioux Falls"
+
+BikeEvents$City[BikeEvents$City == 'Schodack ']<-"Schodack"
+
+BikeEvents$City[BikeEvents$City == 'San Antonio ']<-"San Antonio"
+
+BikeEvents$City[BikeEvents$City == 'New York City']<-"New York" 
+
+BikeEvents$City[BikeEvents$City == 'New Albany ']<-"New Albany"
+
+BikeEvents$City[BikeEvents$City == 'Keuka Park ']<-"Keuka Park"
+BikeEvents$City[BikeEvents$City == 'Hollidaysburg, PA to State College']<-"Hollidaysburg" 
+BikeEvents$City[BikeEvents$City == 'Duluth to White Bear Lake']<-"Duluth"
+BikeEvents$City[BikeEvents$City == 'Duluth to the Twin Cities']<-"Duluth"
+BikeEvents$City[BikeEvents$City == 'Fargo area']<-"Fargo"
+BikeEvents$City[BikeEvents$City == 'Dallas ']<-"Dallas"
+BikeEvents$City[BikeEvents$City == 'DeKalb']<-"Dekalb"
+BikeEvents$City[BikeEvents$City == 'DeKalb ']<-"Dekalb"
+
+```
+
+```{r}
+summary(BikeEvents$Event.Date)
+```
+
+
+```{r}
+#Date Conversion in R
+datecols_bikeevents<-which(names(BikeEvents)%in%c("Event.Created.Date", "Event.Date"))
+
+for (i in datecols_bikeevents) {
+  BikeEvents[,i] = as.Date(BikeEvents[,i], '%m/%d/%y')
+}
+
+```
+
+## Saving the work
+```{r}
+saveRDS(BikeEvents, "C:/Users/Konrad/Desktop/ETM 527/RDS Data/Bike Events/Bike Events.rds")
+```
+
+## Jordan: Cleaning Bike Participants
+
+### Import data
+```{r}
+participants <- read_csv("C:\\Users\\Konrad\\Desktop\\ETM 527\\Participants\\2013-2017 Bike MS Participants.csv")
+```
+
+### Basic data exploration
+```{r}
+class(participants)
+dim(participants)
+glimpse(participants)
+head(participants, n = 5)
+tail(participants, n = 5)
+summary(participants)
+```
+
+Able to see that some fields need to be converted from integers to characters. Also, easily able to identify which fields will need to be rid of NA values. 
+
+```{r}
+# need to change fields from int to char 
+participants$`Team ID` <- as.character(participants$`Team ID`)
+class(participants$`Team ID`)
+participants$`Contact ID` <- as.character(participants$`Contact ID`)
+participants$`Address -  Participant ZIP/Postal Code` <- as.character(participants$`Address -  Participant ZIP/Postal Code`)
+participants$`Event ID` <- as.character(participants$`Event ID`)
+summary(participants)
+
+#change event date from character to date-time
+participants$`Event Date` <- mdy_hm(participants$`Event Date`)
+class(participants$`Event Date`)
+head(participants$`Event Date`, n = 5)
+```
+
+```{r}
+# acknowledge NA's 
+map(participants, ~sum(is.na(.)))
+```
+
+## Writing out Jordan's work
+
+```{r}
+saveRDS(participants, "C:/Users/Konrad/Desktop/ETM 527/RDS Data/Participants/Participants.rds")
+```
 

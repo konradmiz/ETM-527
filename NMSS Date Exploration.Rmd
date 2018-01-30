@@ -1,0 +1,250 @@
+---
+title: "NMSS Data Exploration"
+author: "Konrad Miziolek"
+date: "January 30, 2018"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+donations2013 <- readRDS("C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2013.rds")
+donations2014 <- readRDS("C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2014.rds")
+donations2015 <- readRDS("C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2015.rds")
+donations2016 <- readRDS("C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2016.rds")
+donations2017 <- readRDS("C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2017.rds")
+
+participants <- readRDS("C:/Users/Konrad/Desktop/ETM 527/RDS Data/Participants/Participants.rds")
+
+str(participants)
+
+```
+
+# Creating Data Aggregations
+
+## From donations data
+
+```{r}
+gen_2013 <- summary(donations2013$`Donor Gender`)
+gen_2014 <- summary(donations2014$`Donor Gender`)
+gen_2015 <- summary(donations2015$`Donor Gender`)
+gen_2016 <- summary(donations2016$`Donor Gender`)
+gen_2017 <- summary(donations2017$`Donor Gender`)
+
+
+gender_year <- tibble(c(2013, 2014, 2015, 2016, 2017), 
+                          c(gen_2013[1], gen_2014[1], gen_2015[1], gen_2016[1], gen_2017[1]), 
+                          c(gen_2013[2], gen_2014[2], gen_2015[2], gen_2016[2], gen_2017[2]), 
+                          c(gen_2013[3], gen_2014[3], gen_2015[3], gen_2016[3], gen_2017[3]))
+                          
+colnames(gender_year) <- c("Year", "Female", "Male", "NA")
+
+
+year_num <- tibble(2013:2017, c(nrow(donations2013), nrow(donations2014), nrow(donations2015), nrow(donations2016), nrow(donations2017)))
+colnames(year_num) <- c("Year", "Number of Participants")
+
+
+tot_gifts2013 <- sum(donations2013$`Gift Amount($)`, na.rm = TRUE)
+tot_gifts2014 <- sum(donations2014$`Gift Amount($)`, na.rm = TRUE)
+tot_gifts2015 <- sum(donations2015$`Gift Amount($)`, na.rm = TRUE)
+tot_gifts2016 <- sum(donations2016$`Gift Amount($)`, na.rm = TRUE)
+tot_gifts2017 <- sum(donations2017$`Gift Amount($)`, na.rm = TRUE)
+
+med_gifts2013 <- median(donations2013$`Gift Amount($)`, na.rm = TRUE)
+med_gifts2014 <- median(donations2014$`Gift Amount($)`, na.rm = TRUE)
+med_gifts2015 <- median(donations2015$`Gift Amount($)`, na.rm = TRUE)
+med_gifts2016 <- median(donations2016$`Gift Amount($)`, na.rm = TRUE)
+med_gifts2017 <- median(donations2017$`Gift Amount($)`, na.rm = TRUE)
+
+tot_donations <- tibble(2013:2017,
+                            c(tot_gifts2013, tot_gifts2014, tot_gifts2015, tot_gifts2016, tot_gifts2017),
+                            c(med_gifts2013, med_gifts2014, med_gifts2015, med_gifts2016, med_gifts2017))
+
+colnames(tot_donations) <- c("Year", "Total Donations", "Median")
+
+add_tot_gifts2013 <- sum(donations2013$`Additional Gift Amount($)`, na.rm = TRUE)
+add_tot_gifts2014 <- sum(donations2014$`Additional Gift Amount($)`, na.rm = TRUE)
+add_tot_gifts2015 <- sum(donations2015$`Additional Gift Amount($)`, na.rm = TRUE)
+add_tot_gifts2016 <- sum(donations2016$`Additional Gift Amount($)`, na.rm = TRUE)
+add_tot_gifts2017 <- sum(donations2017$`Additional Gift Amount($)`, na.rm = TRUE)
+
+add_med_gifts2013 <- median(donations2013$`Additional Gift Amount($)`, na.rm = TRUE)
+add_med_gifts2014 <- median(donations2014$`Additional Gift Amount($)`, na.rm = TRUE)
+add_med_gifts2015 <- median(donations2015$`Additional Gift Amount($)`, na.rm = TRUE)
+add_med_gifts2016 <- median(donations2016$`Additional Gift Amount($)`, na.rm = TRUE)
+add_med_gifts2017 <- median(donations2017$`Additional Gift Amount($)`, na.rm = TRUE)
+
+add_donations <- tibble(2013:2017,
+  c(add_tot_gifts2013, add_tot_gifts2014, add_tot_gifts2015, add_tot_gifts2016, add_tot_gifts2017), 
+  c(add_med_gifts2013, add_med_gifts2014, add_med_gifts2015, add_med_gifts2016, add_med_gifts2017))
+
+colnames(add_donations) <- c("Year", "Additional Donations", "Median")
+```
+
+
+## Plotting donations data
+
+```{r}
+ggplot(data = subset(donations2013, !is.na(`Donor Gender`))) + 
+  geom_bar(aes(`Donor Gender`, fill = `Donor Gender`), na.rm = TRUE) + 
+  xlab("Donor Gender") + 
+  ylab("Count") + 
+  ggtitle("2013 NMS Participants by gender")
+
+ggplot(data = subset(donations2013, !is.na(`Gift Payment Method`))) + 
+  geom_bar(aes(`Gift Payment Method`, fill = `Donor Gender`)) + 
+  xlab("Gift Payment Method") + 
+  ylab("Dollars") + 
+  ggtitle("2013 NMS Gift Payment Method Types by Gender")
+
+library(scales)
+ggplot(tot_donations, aes(Year, `Total Donations`/1000000)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(labels=dollar_format(prefix="$")) + 
+  ylab("Gift Amount ($M)") + 
+  ggtitle("Gift amounts have fallen every year since 2014") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  ggsave("C:\\Users\\Konrad\\Desktop\\ETM 527\\Gift amounts have fallen.png")
+
+
+ggplot(add_donations, aes(Year, `Additional Donations`/1000000)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(labels=dollar_format(prefix="$")) + 
+  ylab("Additional gift Amount ($M)") + 
+  ggtitle("Additional gift amounts were increasing but fell in 2017") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  ggsave("C:\\Users\\Konrad\\Desktop\\ETM 527\\Additional gift amounts were increasing.png")
+
+
+
+
+colnames(add_donations)
+
+
+ggplot() + 
+  geom_bar(data = tot_donations, aes(Year, `Total Donations` / 1000000), stat = "identity") +
+  geom_bar(data = add_donations, aes(Year, `Additional Donations` /1000000), stat = "identity", fill = "red", alpha = 0.6)  
+  
+
+participants <- tibble(2013:2017, c(nrow(donations2013), nrow(donations2014), nrow(donations2015), nrow(donations2016), nrow(donations2017)))
+
+colnames(participants) <- c("Year", "Participants")
+
+ggplot(participants) + 
+  geom_bar(aes(x = Year, y = Participants), stat = "identity") + 
+  ylim(0, 1000000) + 
+  scale_y_continuous(labels= comma) +
+  ggtitle("Number of participants has fallen every year since 2013") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  ggsave("C:\\Users\\Konrad\\Desktop\\ETM 527\\Number of participants has fallen.png")
+
+  
+don_per_part = tibble(2013:2017, tot_donations$`Total Donations` / participants$Participants)
+colnames(don_per_part) <- c("Year", "Average Donation")
+
+ggplot(don_per_part, aes(Year, `Average Donation`)) + 
+  geom_bar(stat = "identity") + 
+  ylab("Averate Gift Amount") + 
+  ggtitle("Average gift per participant has increased every year since 2013") + 
+    theme(plot.title = element_text(hjust = 0.5)) + 
+  ggsave("C:\\Users\\Konrad\\Desktop\\ETM 527\\Average gift per participant has increased.png")
+
+
+
+```
+
+
+## Ramya's Bike Events Data Aggregation
+
+```{r}
+#Average amount by total participants in all the states
+Amount_by_States<-aggregate(BikeEvents$Total.From.Participant..., by=list(State = BikeEvents$State), FUN = mean)
+head(Amount_by_States)
+
+```
+
+```{r}
+#Amount raised by participants from 2013-2017
+Amount_by_year <-aggregate(BikeEvents$Total.From.Participant..., by = list(year = BikeEvents$Fiscal.Year), sum)
+Amount_by_year
+```
+
+```{r}
+#selft donars over
+Donors_by_year <-aggregate(BikeEvents$Total.From.Participant..., by = list(year = BikeEvents$Fiscal.Year), sum)
+Donors_by_year
+
+```
+
+
+```{r}
+#Active registrations overs the years
+Active_registrations <-aggregate(BikeEvents$Active.Registrations, by = list(year = BikeEvents$Fiscal.Year), sum)
+Active_registrations
+
+```
+
+## Ramya's Plots
+
+```{r}
+library('ggplot2')
+Amounts_ggplot<-ggplot(Amount_by_States, aes(x=Amount_by_States$State,y=Amount_by_States$x))+ 
+  theme(axis.text.x = element_text(face = "bold", size = 8, angle = 90))+
+  geom_bar(stat = 'identity', fill = "blue")+
+  ggtitle("Average amount raised by Bike Events participants across all the states") + 
+  labs(x ='States', y = 'Average amount')
+```
+
+```{r}
+Amounts_ggplot
+ggsave(filename="D:/527- Data Mining/TUN Data Challenge/Data Visualizations/Amounts_ggplot.pdf", plot=Amounts_ggplot)
+
+```
+
+```{r}
+ggplot(Amount_by_year, aes(x = Amount_by_year$year, y = Amount_by_year$x)) +
+  geom_bar(stat = 'identity', fill = "blue")+ggtitle("Participants amount to Bike events slightly decreasing since 2014") + 
+  labs(x ='Year', y = 'Total amount')
+
+```
+
+```{r}
+#Donars by year
+ggplot(Donors_by_year, aes(x = Donors_by_year$year, y = Donors_by_year$x))+
+  geom_bar(stat = 'identity', fill = "blue")+ggtitle("Self donors gradually decreasing since 2014 ") + 
+  labs(x ='Year', y = 'Total amount')
+
+
+```
+
+```{r}
+#Donars by year
+ggplot(Active_registrations, aes(x = Active_registrations$year, y = Active_registrations$x)) +
+  geom_bar(stat = 'identity', fill = "blue")+ggtitle("Active registrations have fallen since 2013 ") + 
+  labs(x ='Year', y = 'No of registrations')
+
+```
+
+## Jordan's Participants EDA
+
+```{r}
+# some basic data viz
+barplot(table(participants$`Participant Occupation`), ylab = "Count", main = "Occupations of our Participants",
+        ylim = c(0,2500), las = 2, col=rgb(0.2,0.4,0.6,0.6))
+
+occ.count <- table(participants$`Participant Occupation`)
+occ.count
+occupation.viz <- ggplot(data = participants, aes(x = participants$`Participant Occupation`)) + 
+  geom_bar(aes(y = (..count..), fill = `Participant Gender`)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+occupation.viz + labs(x = "Occupations") + 
+  labs(title = "Frequency of Participant Occupation") + 
+  labs(y = "Count")
+```
+
+
+
+
