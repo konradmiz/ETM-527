@@ -1,0 +1,243 @@
+---
+title: "NMSS Data Exploration"
+author: "Konrad Miziolek"
+date: "January 30, 2018"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(scales)
+
+donations2013 <- readRDS("C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2013.rds")
+donations2014 <- readRDS("C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2014.rds")
+donations2015 <- readRDS("C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2015.rds")
+donations2016 <- readRDS("C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2016.rds")
+donations2017 <- readRDS("C:/Users/Konrad/Desktop/ETM 527/RDS Data/Donations/Donations2017.rds")
+
+participants <- readRDS("C:/Users/Konrad/Desktop/ETM 527/RDS Data/Participants/Participants.rds")
+
+#summary(donations2017$`Donor Gender`)
+#levels(donations2017$`Donor Gender`) <- list(Male = "Male", Female = "Female", None = "")
+```
+
+# Creating Data Aggregations
+
+## From donations data
+
+```{r}
+# gen_2013 <- summary(donations2013$`Donor Gender`)
+# gen_2014 <- summary(donations2014$`Donor Gender`)
+# gen_2015 <- summary(donations2015$`Donor Gender`)
+# gen_2016 <- summary(donations2016$`Donor Gender`)
+# gen_2017 <- summary(donations2017$`Donor Gender`)
+# 
+# 
+# gender_year <- tibble(c(2013, 2014, 2015, 2016, 2017), 
+#                           c(gen_2013[1], gen_2014[1], gen_2015[1], gen_2016[1], gen_2017[1]), 
+#                           c(gen_2013[2], gen_2014[2], gen_2015[2], gen_2016[2], gen_2017[2]), 
+#                           c(gen_2013[3], gen_2014[3], gen_2015[3], gen_2016[3], gen_2017[3]),
+#                           c(gen_2013[4], gen_2014[4], gen_2015[4], gen_2016[4], gen_2017[4]))
+#                           
+# colnames(gender_year) <- c("Year", "Female", "Male", "None", "NA")
+# 
+# 
+# year_num <- tibble(2013:2017, c(nrow(donations2013), nrow(donations2014), nrow(donations2015), nrow(donations2016), nrow(donations2017)))
+# colnames(year_num) <- c("Year", "Number of Participants")
+# 
+# 
+# tot_gifts2013 <- sum(donations2013$`Gift Amount($)`, na.rm = TRUE)
+# tot_gifts2014 <- sum(donations2014$`Gift Amount($)`, na.rm = TRUE)
+# tot_gifts2015 <- sum(donations2015$`Gift Amount($)`, na.rm = TRUE)
+# tot_gifts2016 <- sum(donations2016$`Gift Amount($)`, na.rm = TRUE)
+# tot_gifts2017 <- sum(donations2017$`Gift Amount($)`, na.rm = TRUE)
+# 
+# med_gifts2013 <- median(donations2013$`Gift Amount($)`, na.rm = TRUE)
+# med_gifts2014 <- median(donations2014$`Gift Amount($)`, na.rm = TRUE)
+# med_gifts2015 <- median(donations2015$`Gift Amount($)`, na.rm = TRUE)
+# med_gifts2016 <- median(donations2016$`Gift Amount($)`, na.rm = TRUE)
+# med_gifts2017 <- median(donations2017$`Gift Amount($)`, na.rm = TRUE)
+# 
+# mean_gifts2013 <- mean(donations2013$`Gift Amount($)`, na.rm = TRUE)
+# mean_gifts2014 <- mean(donations2014$`Gift Amount($)`, na.rm = TRUE)
+# mean_gifts2015 <- mean(donations2015$`Gift Amount($)`, na.rm = TRUE)
+# mean_gifts2016 <- mean(donations2016$`Gift Amount($)`, na.rm = TRUE)
+# mean_gifts2017 <- mean(donations2017$`Gift Amount($)`, na.rm = TRUE)
+# 
+# 
+# tot_donations <- tibble(2013:2017,
+#                             c(tot_gifts2013, tot_gifts2014, tot_gifts2015, tot_gifts2016, tot_gifts2017),
+#                             c(med_gifts2013, med_gifts2014, med_gifts2015, med_gifts2016, med_gifts2017), 
+#                             c(mean_gifts2013, mean_gifts2014, mean_gifts2015, mean_gifts2016, mean_gifts2017))
+# 
+# colnames(tot_donations) <- c("Year", "Total Donations", "Median", "Mean")
+# 
+# add_tot_gifts2013 <- sum(donations2013$`Additional Gift Amount($)`, na.rm = TRUE)
+# add_tot_gifts2014 <- sum(donations2014$`Additional Gift Amount($)`, na.rm = TRUE)
+# add_tot_gifts2015 <- sum(donations2015$`Additional Gift Amount($)`, na.rm = TRUE)
+# add_tot_gifts2016 <- sum(donations2016$`Additional Gift Amount($)`, na.rm = TRUE)
+# add_tot_gifts2017 <- sum(donations2017$`Additional Gift Amount($)`, na.rm = TRUE)
+# 
+# add_med_gifts2013 <- median(donations2013$`Additional Gift Amount($)`, na.rm = TRUE)
+# add_med_gifts2014 <- median(donations2014$`Additional Gift Amount($)`, na.rm = TRUE)
+# add_med_gifts2015 <- median(donations2015$`Additional Gift Amount($)`, na.rm = TRUE)
+# add_med_gifts2016 <- median(donations2016$`Additional Gift Amount($)`, na.rm = TRUE)
+# add_med_gifts2017 <- median(donations2017$`Additional Gift Amount($)`, na.rm = TRUE)
+# 
+# add_mean_gifts2013 <- mean(donations2013$`Additional Gift Amount($)`, na.rm = TRUE)
+# add_mean_gifts2014 <- mean(donations2014$`Additional Gift Amount($)`, na.rm = TRUE)
+# add_mean_gifts2015 <- mean(donations2015$`Additional Gift Amount($)`, na.rm = TRUE)
+# add_mean_gifts2016 <- mean(donations2016$`Additional Gift Amount($)`, na.rm = TRUE)
+# add_mean_gifts2017 <- mean(donations2017$`Additional Gift Amount($)`, na.rm = TRUE)
+# 
+# 
+# add_donations <- tibble(2013:2017,
+#   c(add_tot_gifts2013, add_tot_gifts2014, add_tot_gifts2015, add_tot_gifts2016, add_tot_gifts2017), 
+#   c(add_med_gifts2013, add_med_gifts2014, add_med_gifts2015, add_med_gifts2016, add_med_gifts2017), 
+#   c(add_mean_gifts2013, add_mean_gifts2014, add_mean_gifts2015, add_mean_gifts2016, add_mean_gifts2017))
+# 
+# colnames(add_donations) <- c("Year", "Additional Donations", "Median", "Mean")
+# 
+# 
+# write_rds(tot_donations, "C:/Users/Konrad/Desktop/ETM 527/Calculated/Gift Amounts.rds")
+# write_rds(add_donations, "C:/Users/Konrad/Desktop/ETM 527/Calculated/Additional Amounts.rds")
+# write_rds(gender_year, "C:/Users/Konrad/Desktop/ETM 527/Calculated/Yearly Gender Breakdown.rds")
+# 
+# gen_tot_2013_gifts <- aggregate(donations2013$`Gift Amount($)`, by = list(donations2013$`Donor Gender`), FUN = sum)
+# gen_med_2013_gifts <- aggregate(donations2013$`Gift Amount($)`, by = list(donations2013$`Donor Gender`), FUN = median)  
+# gen_mean_2013_gifts <- aggregate(donations2013$`Gift Amount($)`, by = list(donations2013$`Donor Gender`), FUN = mean)
+# 
+# gen_tot_2014_gifts <- aggregate(donations2014$`Gift Amount($)`, by = list(donations2014$`Donor Gender`), FUN = sum)
+# gen_med_2014_gifts <- aggregate(donations2014$`Gift Amount($)`, by = list(donations2014$`Donor Gender`), FUN = median)  
+# gen_mean_2014_gifts <- aggregate(donations2014$`Gift Amount($)`, by = list(donations2014$`Donor Gender`), FUN = mean)
+# 
+# gen_tot_2015_gifts <- aggregate(donations2015$`Gift Amount($)`, by = list(donations2015$`Donor Gender`), FUN = sum)
+# gen_med_2015_gifts <- aggregate(donations2015$`Gift Amount($)`, by = list(donations2015$`Donor Gender`), FUN = median)  
+# gen_mean_2015_gifts <- aggregate(donations2015$`Gift Amount($)`, by = list(donations2015$`Donor Gender`), FUN = mean)
+# 
+# gen_tot_2016_gifts <- aggregate(donations2016$`Gift Amount($)`, by = list(donations2016$`Donor Gender`), FUN = sum)
+# gen_med_2016_gifts <- aggregate(donations2016$`Gift Amount($)`, by = list(donations2016$`Donor Gender`), FUN = median)  
+# gen_mean_2016_gifts <- aggregate(donations2016$`Gift Amount($)`, by = list(donations2016$`Donor Gender`), FUN = mean)
+# 
+# gen_tot_2017_gifts <- aggregate(donations2017$`Gift Amount($)`, by = list(donations2017$`Donor Gender`), FUN = sum)
+# gen_med_2017_gifts <- aggregate(donations2017$`Gift Amount($)`, by = list(donations2017$`Donor Gender`), FUN = median)  
+# gen_mean_2017_gifts <- aggregate(donations2017$`Gift Amount($)`, by = list(donations2017$`Donor Gender`), FUN = mean)
+# 
+# gender_year_totals <- rbind(gen_tot_2013_gifts, gen_tot_2014_gifts, gen_tot_2015_gifts, gen_tot_2016_gifts, gen_tot_2017_gifts)
+# 
+# gender_year_med <- rbind(gen_med_2013_gifts, gen_med_2014_gifts, gen_med_2015_gifts, gen_med_2016_gifts, gen_med_2017_gifts)
+# 
+# gender_year_mean <- rbind(gen_mean_2013_gifts, gen_mean_2014_gifts, gen_mean_2015_gifts, gen_mean_2016_gifts, gen_mean_2017_gifts)
+# 
+# gender_totals <- tibble(rep(2013:2017, each = 3), 
+#                         rep(c("Female", "Male", "None"), times = 5), 
+#                         gender_year_totals$x, 
+#                         gender_year_med$x, 
+#                         gender_year_mean$x)
+# 
+# colnames(gender_totals) <- c("Year", "Gender", "Total Gifts", "Median", "Mean")
+# 
+# write_rds(gender_totals, "C:/Users/Konrad/Desktop/ETM 527/Calculated/Gender Year Totals Breakdown.rds")
+
+```
+
+
+```{r}
+tot_donations <- read_rds("C:/Users/Konrad/Desktop/ETM 527/Calculated/Gift Amounts.rds")
+add_donations <- read_rds("C:/Users/Konrad/Desktop/ETM 527/Calculated/Additional Amounts.rds")
+gender_year <- read_rds("C:/Users/Konrad/Desktop/ETM 527/Calculated/Yearly Gender Breakdown.rds")
+gender_totals <- read_rds("C:/Users/Konrad/Desktop/ETM 527/Calculated/Gender Year Totals Breakdown.rds")
+
+```
+
+
+```{r}
+
+
+##### Total Donations
+
+ggplot(tot_donations, aes(Year, `Total Donations`)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(labels = comma) + 
+  ylab("Participants") + 
+  ggtitle("The number of participants has fallen every year since 2014") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.title = element_text(size = 18, face = "bold")) #+
+  #ggsave("C:\\Users\\Konrad\\Desktop\\ETM 527\\Participant numbers fallen.png")
+
+ggplot(participants, aes(`Fiscal Year`)) + 
+  geom_bar() + 
+  scale_y_continuous(labels = comma) + 
+  ylab("Participants") + 
+  xlab("Fiscal Year") + 
+  ggtitle("Number of participants has decreased every year") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(plot.title = element_text(size =18, face = "bold")) #+
+  #ggsave("C:\\Users\\Konrad\\Desktop\\ETM 527\\Number of participants decreased every year.png", width = 10)
+
+
+## Sum of Donations
+ggplot(tot_donations, aes(Year, `Total Donations`/1000000)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(labels=dollar_format(prefix="$")) + 
+  ylab("Gift Amount ($M)") + 
+  ggtitle("Total gift amounts have fallen every year since 2014") + 
+  theme(plot.title = element_text(hjust = 0.5)) #+ 
+  #ggsave("C:\\Users\\Konrad\\Desktop\\ETM 527\\Gift amounts have fallen.png")
+
+### Mean Donations
+ggplot(tot_donations, aes(Year, Mean)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(labels=dollar_format(prefix="$")) + 
+  ylab("Gift Amount") + 
+  ggtitle("Mean gift amount continues to rise") + 
+  theme(plot.title = element_text(hjust = 0.5)) #+ 
+  #ggsave("C:\\Users\\Konrad\\Desktop\\ETM 527\\Gift amounts have fallen.png")
+
+### Median Donations
+ggplot(tot_donations, aes(Year, Median)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(labels=dollar_format(prefix="$")) + 
+  ylab("Gift Amount") + 
+  ggtitle("Median gift amount remains unchanged") + 
+  theme(plot.title = element_text(hjust = 0.5)) #+ 
+  #ggsave("C:\\Users\\Konrad\\Desktop\\ETM 527\\Gift amounts have fallen.png")
+
+##### Gender Totals
+ggplot(gender_totals[order(gender_totals$Gender),], aes(Year, `Total Gifts`/1000000, fill = Gender)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(labels=dollar_format(prefix="$", suffix = "M")) + 
+  scale_fill_manual(values=c("#A92A2A", "#205A8F", "#B4BFC3")) +
+  ylab("Gift Amount (M)") + 
+  ggtitle("Total gift amount has decreased") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.title = element_text(size =18, face = "bold")) #+
+  #ggsave("C:\\Users\\Konrad\\Desktop\\ETM 527\\Total gift amounts by gender.png", width = 12)
+
+ggplot(gender_totals, aes(Year, Median, fill = Gender)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  scale_y_continuous(labels=dollar_format(prefix="$")) + 
+  scale_fill_manual(values=c("#A92A2A", "#205A8F", "#B4BFC3")) +
+  ylab("Gift Amount ($)") + 
+  ggtitle("Median gift amount remains unchanged") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(plot.title = element_text(size =18, face = "bold")) #+
+  #ggsave("C:\\Users\\Konrad\\Desktop\\ETM 527\\Median gift amounts by gender.png", width = 12)
+
+
+ggplot(gender_totals, aes(Year, Mean, fill = Gender)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  scale_y_continuous(labels=dollar_format(prefix="$")) +  
+  scale_fill_manual(values = c("#A92A2A", "#205A8F", "#B4BFC3")) +
+  ylab("Gift Amount ($)") + 
+  ggtitle("Mean gift amount has fluctuated") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(plot.title = element_text(size =18, face = "bold")) #+
+  #ggsave("C:\\Users\\Konrad\\Desktop\\ETM 527\\Mean gift amounts by gender.png", width = 12)
+
+
+```
+
+
