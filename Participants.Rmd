@@ -1,0 +1,324 @@
+---
+title: "Clean and Explore Bike Participants"
+author: "Jordan Beary"
+date: "January 29, 2018"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=TRUE, warning=FALSE}
+# load your libraries
+library(knitr)
+library(stats)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(ggfortify)
+library(scales)
+library(plotly)
+library(plyr)
+library(lubridate)
+library(tidyverse)
+library(reshape2)
+library(ggfittext)
+library(treemapify)
+library(tidyr)
+```
+
+## Import data
+```{r message=FALSE, warning=FALSE}
+participants <- read_csv("Data/Participants/2013-2017 Bike MS Participants.csv")
+```
+
+## Basic data exploration
+```{r}
+class(participants)
+dim(participants)
+glimpse(participants)
+head(participants, n = 5)
+tail(participants, n = 5)
+summary(participants)
+```
+
+Able to see that some fields need to be converted from integers to characters. Also, easily able to identify which fields will need to be rid of NA values. 
+
+```{r}
+# need to change fields from int to char 
+participants$`Team ID` <- as.character(participants$`Team ID`)
+class(participants$`Team ID`)
+participants$`Contact ID` <- as.character(participants$`Contact ID`)
+participants$`Address -  Participant ZIP/Postal Code` <- as.character(participants$`Address -  Participant ZIP/Postal Code`)
+participants$`Event ID` <- as.character(participants$`Event ID`)
+summary(participants)
+
+#change event date from character to date-time
+participants$`Event Date` <- mdy_hm(participants$`Event Date`)
+class(participants$`Event Date`)
+head(participants$`Event Date`, n = 5)
+
+# change character type to factor for binning
+unique(participants$`Is Prior Participant`)
+participants$`Is Prior Participant` <- as.factor(participants$`Is Prior Participant`)
+levels(participants$`Is Prior Participant`) <- list(No = "N/A", Yes = "Yes")
+head(participants$`Is Prior Participant`)
+
+# gender
+unique(participants$`Participant Gender`)
+participants$`Participant Gender` <- as.factor(participants$`Participant Gender`)
+levels(participants$`Participant Gender`) <- list(Male = "Male", Female = "Female")
+head(participants$`Participant Gender`)
+
+# team division
+unique(participants$`Team Division`)
+participants$`Team Division` <- as.factor(participants$`Team Division`)
+levels(participants$`Team Division`) <- list(`Friends and Family` = c("Friends and Family", "Family and Friends"), 
+                                             Corporate = c("Corporate", "Corporation"), 
+                                             Organization = "Organization (Clubs; Civic Groups; etc.)", `
+                                             Church Group` = c("Place of Worship", "Religious"), 
+                                             School = "School", 
+                                             Other = "Other")
+head(participants$`Team Division`)
+
+#fiscal year
+unique(participants$`Fiscal Year`)
+class(participants$`Fiscal Year`)
+participants$`Fiscal Year` <- as.character(participants$`Fiscal Year`)
+participants$`Fiscal Year` <- as.Date(participants$`Fiscal Year`, "%Y")
+participants$`Fiscal Year` <- year(participants$`Fiscal Year`)
+head(participants$`Fiscal Year`)
+```
+
+```{r}
+# acknowledge NA's 
+map(participants, ~sum(is.na(.)))
+```
+
+
+```{r}
+# some basic data viz
+barplot(table(participants$`Participant Occupation`), ylab = "Count", main = "Occupations of our Participants",
+        ylim = c(0,2500), las = 2, col=rgb(0.2,0.4,0.6,0.6))
+occ.count <- table(participants$`Participant Occupation`)
+occ.count
+
+occupation.omitNA <- participants[!is.na(participants$`Participant Occupation`),]
+
+# Occupation Demographic
+top20.occupations.viz <- ggplot(data = occupation.omitNA, aes(x = occupation.omitNA$`Participant Occupation`)) + 
+  geom_bar(na.rm = TRUE, aes(y = (..count..), fill = `Participant Gender`)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+top20.occupations.viz <- top20.occupations.viz + 
+  labs(x = "Occupations") + 
+  labs(title = "Frequency of Participant Occupation") + 
+  labs(y = "Count")
+top20.occupations.viz
+
+# Prior Participant? Yes - No?
+prior.par.bar <- barplot(table(participants$`Is Prior Participant`), ylab = "Count", main = "Count of Prior Participants",
+        ylim = c(0,40000), las = 2, col=rgb(0.2,0.4,0.6,0.6))
+
+# Team division bar plot
+team.division.bar <- barplot(table(participants$`Team Division`), ylab = "Count", main = "Team Division Demographic",
+        ylim = c(0,30000), las = 2, col=rgb(0.2,0.4,0.6,0.6))
+
+
+```
+
+# Let's build our first persona
+## Questions to ask and information to gather
+### Gender
+```{r}
+# make a data frame of gender counts to make visualizing easier
+gender.df <- as.data.frame(table(participants$`Participant Gender`))
+colnames(gender.df) <- c("Gender", "Count")
+glimpse(gender.df)
+gender.df
+
+# visualize gender counts 
+gender.viz <- ggplot(gender.df, aes(x = Gender, y = Count)) + 
+  geom_bar(stat = "identity")
+gender.viz
+```
+Overall we see that participants are predominately male. But what about over time? 
+```{r}
+gender.vip <- data.frame(participants$`Event Date`, participants$`Participant Gender`, participants$`Participant Occupation`,
+                          participants$`Team Division`, participants$`Is Prior Participant`, participants$`Address  -  Participant City`,
+                          participants$`Total From Participant($)`, participants$`Fiscal Year`, 
+                         participants$`Address  -  Participant State/Province`, participants$`Internal Event Name`)
+colnames(gender.vip) <- c("Event Date", "Participant Gender", "Participant Occupation", "Team Division", "Is Prior Participant",
+                          "Address - Participant City", "Total From Participant($)", "Fiscal Year", "Address - Participant State",
+                          "Event Name")
+
+gender.year <- aggregate(gender.vip, by = list(gender.vip$`Participant Gender`, gender.vip$`Fiscal Year`), FUN = length)
+colnames(gender.year) <- c("Gender", "Year", "Count")
+gender.year[,c(1,2,3)]
+
+
+g.year.viz <- ggplot(data = gender.year, 
+                     aes(x = gender.year$Year, y = gender.year$Count, fill = gender.year$Gender)) +
+  geom_bar(stat = "identity")
+g.year.viz +
+  labs(title = "Annual Participant Gender Count") +
+  labs(x = "Event Year") +
+  labs(y = "Count")
+
+gt.count <- aggregate(gender.vip$`Participant Gender` ~ gender.vip$`Fiscal Year`, data = gender.vip, FUN = length)
+colnames(gt.count) <- c("Year", "Count")
+gt.count
+
+gender.time.viz <- ggplot(gender.vip, aes(x = `Event Date`))
+```
+
+
+Who donates more - guys or gals?
+```{r warning=FALSE}
+# mean donation for each event
+gender.gifts <- aggregate(gender.vip, by = list(gender.vip$`Participant Gender`, gender.vip$`Event Date`), FUN = mean)
+gender.gifts <-gender.gifts[,c(1,2,9)]
+colnames(gender.gifts) <- c("Gender", "Event Date", "Gift Amount")
+gender.gifts
+
+g.gift.viz <- ggplot(data = gender.gifts, 
+                     aes(x = gender.gifts$`Event Date`, y = gender.gifts$`Gift Amount`, colour = gender.gifts$Gender)) +
+  geom_boxplot() + geom_jitter(width = 0.5)
+g.gift.viz +
+  labs(title = "Mean Participant Donation per Event by Gender") +
+  labs(x = "Date") +
+  labs(y = "Gift Amount")
+
+# mean donation for each fiscal year
+gender.gifts.year <- aggregate(gender.vip, by = list(gender.vip$`Participant Gender`, gender.vip$`Fiscal Year`), FUN = mean)
+gender.gifts.year <-gender.gifts.year[,c(1,2,9)]
+colnames(gender.gifts.year) <- c("Gender", "Year", "Gift Amount")
+gender.gifts.year
+  
+g.gift.year.viz <- ggplot(data = gender.gifts.year, 
+                     aes(x = gender.gifts.year$Year, y = gender.gifts.year$`Gift Amount`, fill = gender.gifts.year$Gender)) +
+  geom_bar(stat = "identity")
+g.gift.year.viz +
+  labs(title = "Mean Participant Donation per Year by Gender") +
+  labs(x = "Fiscal Year") +
+  labs(y = "Gift Amount")
+  
+```
+# Where are the participants coming from?
+```{r}
+# for city
+city.count <- as.data.frame(table(c(participants$`Address  -  Participant City`)))
+colnames(city.count) <- c("City", "Count")
+
+top.city <- head(arrange(city.count,desc(city.count$Count)), n = 50)
+
+tree.city <- ggplot(top.city, aes(area = Count, fill = Count, label = City)) +
+  geom_treemap()+
+  geom_treemap_text(fontface = "italic", colour = "white", place = "centre",
+                    grow = TRUE)
+tree.city
+
+# for state
+state.count <- as.data.frame(table(c(participants$`Address  -  Participant State/Province`)))
+colnames(state.count) <- c("State", "Count")
+
+top.state <- head(arrange(state.count,desc(state.count$Count)), n = 10)
+
+tree.state <- ggplot(top.state, aes(area = Count, fill = Count, label = State)) +
+  geom_treemap()+
+  geom_treemap_text(fontface = "italic", colour = "white", place = "centre",
+                    grow = TRUE)
+tree.state
+```
+
+# What do they do for work?
+```{r}
+# top 15 occupations
+count.occ <- as.data.frame(table(gender.vip$`Participant Occupation`))
+colnames(count.occ) <- c("Occupation", "Count")
+top.occ <- head(arrange(count.occ, desc(Count)), n = 15)
+
+# of the top 10 states what are the top occupations
+state.occ <- as.data.frame(
+  gender.vip %>%
+  select(`Address - Participant State`, `Participant Occupation`) %>%
+  filter(`Address - Participant State` == c("CA", "CO", "FL", "CT", "DE", "AL", "AZ", "VA", "PA", "TX")) %>%
+  group_by(`Participant Occupation`, `Address - Participant State`) %>%
+  tally(!is.na(`Participant Occupation`)) %>%
+  top_n(20)
+)
+state.occ$`Address - Participant State` <- as.character(state.occ$`Address - Participant State`)
+spread.occ <- spread(state.occ, `Address - Participant State`, n) # this works but check the data ...very sus
+
+spread.occ[is.na(spread.occ)] <- 0
+spread.occ <- spread.occ[-50, ]
+
+spread.viz <- ggplot(data = spread.occ, aes(x = `Participant Occupation`)) + 
+  geom_bar()
+spread.viz
+
+# which occupation donates the most by state
+```
+
+
+Donations by Event
+```{r warning=FALSE}
+event.gifts <- aggregate(gender.vip, by = list(gender.vip$`Event Name`, gender.vip$`Fiscal Year`), FUN = mean)
+event.gifts <- event.gifts[,c(1,3,9)]
+as.data.frame(event.gifts)
+colnames(event.gifts) <- c("Event", "Date", "Gift Amount")
+
+event.gifts$Year <- format(event.gifts$Date, "%Y")
+event.gifts$Month <- format(event.gifts$Date, "%b")
+event.gifts$Day <- format(event.gifts$Date, "%d")
+event.gifts$CommonDate <- as.Date(as.character(as.POSIXct(event.gifts$Date)))
+
+event.viz <- ggplot(data = event.gifts, mapping = aes(x = CommonDate, y = `Gift Amount`, shape = Year, colour = Year)) +
+    geom_point() +
+    geom_line(aes(group = 1))
+event.viz <- event.viz + 
+  facet_wrap(~Year, ncol = 1, scales = "free_x") + theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+  scale_y_continuous() +
+  scale_x_date(labels = date_format("%d-%b"), breaks = date_breaks("2 weeks"))
+event.viz
+```
+
+
+```{r}
+# save RDS 
+saveRDS(team.division.bar, "team_division_bar.rds")
+saveRDS(occupations.viz, "occupations_vis.rds")
+saveRDS(prior.par.bar, "prior_participant.rds")
+```
+
+
+```{r eval=FALSE, include=FALSE}
+#occupation.viz <- ggplot(data = occupation.omitNA, aes(x = occupation.omitNA$`Participant Occupation`)) + 
+#  geom_bar(aes(y = (..count..)), fill = occupation.omitNA$`Participant Gender`) +
+#  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+#occupation.viz + 
+#  labs(x = "Occupations") + 
+#  labs(title = "Frequency of Participant Occupation") + 
+#  labs(y = "Count")
+
+#occupation.viz <- ggplot(data = subset(participants, `Participant Occupation` != "NA"), aes(x = participants$`Participant Occupation`)) + 
+#  geom_bar(na.rm = TRUE, aes(y = (..count..), fill = `Participant Gender`)) +
+#  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+#occupation.viz + labs(x = "Occupations") + 
+#  labs(title = "Frequency of Participant Occupation") + 
+#  labs(y = "Count")
+```
+
+
+```{r}
+donations.ramya <- read_csv("C:\\Users\\J-Blazer\\OneDrive\\ETM 527 DataSets\\Donations\\2017 Bike Donations.csv")
+occupations.ramya <- merge(donations.ramya[, c("Event_ID", "Gift Amount")])
+
+funds <- donations.ramya %>%
+ group_by(Participant Occupation)%>%
+ summarise(Gift.Amount)
+```
+
