@@ -1,0 +1,209 @@
+---
+title: "National Teams"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r}
+library(dplyr)
+library(magrittr)
+library(tidyr)
+library(knitr)
+library(tibble)
+library(readxl)
+library(graphics)
+library(ggplot2)
+library(scales)
+library(RColorBrewer)
+```
+
+```{r}
+nt <-
+read_excel("C:/Users/eva/Documents/ETM 527/Data Challenge 2018/National Teams/2013-2017 National Team Activity.xlsx", skip = 1, na = c("NA", " ", "-999"),
+           col_types = c("text", "text", "text", 
+                         "text", "text", "text", "date", "text", 
+                         "numeric", "numeric", "numeric", 
+                         "numeric", "numeric", "text", "text", 
+                         "text", "text", "text", "text", "text", 
+                         "text", "numeric", "text", "text", 
+                         "text", "text", "text"))
+
+dim(nt)
+```
+
+```{r}
+#Removing the "Corporate Name" field as it was blank for all recornt
+nt$'Corporate Name' <- NULL
+str(nt)
+```
+```{r}
+nt$`Event Chapter` <- as.factor(nt$`Event Chapter`)
+nt$`Event Category` <- as.factor(nt$`Event Category`)
+nt$`Event Type` <- as.factor(nt$`Event Type`)
+nt$`Local Team Name` <- as.factor(nt$`Local Team Name`)
+nt$`Event Name` <- as.factor(nt$`Event Name`)
+nt$Location <- as.factor(nt$Location)
+
+cols_to_factor <- 12:ncol(nt)
+
+nt[, cols_to_factor] <- lapply(nt[, cols_to_factor], as.factor) 
+
+```
+
+```{r}
+# Fill down team names
+for (i in 2:nrow(nt))
+{
+  if (is.na(nt$`National Team Name`[i]) & !is.na(nt$`National Team Name`[i-1]))
+  {
+    nt$`National Team Name`[i] <- nt$`National Team Name`[i-1]
+  }
+}
+View(nt)
+
+```
+
+```{r}
+# add NA in the Team Name where applicable
+nt$`National Team Name` <- as.factor(nt$`National Team Name`)
+summary(nt$`National Team Name`)
+
+nt$`National Team Name`[nt$`National Team Name` == "N/A"] <- NA  #selects all matching rows and changes to NA
+summary(nt$`National Team Name`)
+
+
+```
+```{r}
+
+
+Not.National.Team = subset(nt, is.na(nt$`National Team Name`), select =`National Team Name`:`Primary Connection To MS`)
+Not.National.Team = Not.National.Team[,c(5,6,2,3,4,7:26)]
+
+nt <- nt[which(!is.na(nt$`National Team Name`)),]
+nt <- nt[which(!is.na(nt$`Local Team Name`)),]
+```
+
+
+```{r}
+NameLocation <- nt$Location
+summary(NameLocation)
+BlankLocation <- nt[which(is.na(nt$Location)), ]
+View(BlankLocation)
+
+```
+```{r}
+
+
+
+```
+
+```{r}
+
+View(nt)
+
+sink("C:/Users/eva/Documents/ETM 527/Data Challenge 2018/National Teams/National Teams Basic Exploration.txt")
+class(nt)
+dim(nt)
+glimpse(nt)
+head(nt)
+tail(nt)
+summary(nt)
+str(nt)
+sink()
+```
+
+
+
+
+
+```{r}
+library(dplyr)
+teams.count = count(nt,team =nt$`National Team Name`)
+teams.count$team = factor(teams.count$team, levels = teams.count$team[order(teams.count$n)])
+filter.top.count = filter(teams.count,n>15)
+
+```
+
+
+```{r fig2, fig.height = 10, fig.width = 8}
+ggplot(filter.top.count, aes(team,n)) + 
+  geom_bar(stat = "identity", aes(`team`, fill = `team`)) + coord_flip()+theme(axis.text=element_text(size=7),
+        axis.title=element_text(size=14,face="bold"))+
+  ylab("Count") + 
+  xlab("National Team") + 
+  ggtitle("2013 NMSS National Team Participation")+
+  scale_size_continuous()
+ggsave("C:/Users/eva/Documents/ETM 527/Data Challenge 2018/National Teams/National Team Participation.png")
+```
+```{r}
+Teams.Revenue = nt[c(1, 9)]
+Teams.Revenue = aggregate(Teams.Revenue$`Revenue Raised`, by=list(`National Team Name`=Teams.Revenue$`National Team Name`), FUN=sum)
+names(Teams.Revenue) = c("National Team Name", "Total Revenue Raised")
+Teams.Revenue$`National Team Name` = factor(Teams.Revenue$`National Team Name`, levels = Teams.Revenue$`National Team Name`[order(Teams.Revenue$`Total Revenue Raised`)])
+filter.top.revenue = filter(Teams.Revenue,`Total Revenue Raised`>100000)
+
+```
+```{r fig 3, fig.height=10, fig.width=8}
+ggplot(filter.top.revenue, aes(`National Team Name`, `Total Revenue Raised`/10000))+ 
+  geom_bar(stat = "identity", aes(`National Team Name`, fill = `National Team Name`)) +
+  scale_y_continuous(labels=dollar_format(prefix="$"))+
+  ylab("Total Revenue Raised (in 10 thousands)") + 
+  xlab("National Team Name") +   coord_flip()+ 
+  ggtitle("2013 NMSS Top Fundraising National Teams")+ scale_fill_discrete(breaks = rev(levels(filter.top.revenue$`National Team Name`)))
+scale_size_continuous()
+ggsave("C:/Users/eva/Documents/ETM 527/Data Challenge 2018/National Teams/Visuals/Top Funraising National Team.png")
+
+```
+
+
+```{r}
+Connection = count(Not.National.Team, pcms=Not.National.Team$`Primary Connection To MS`)
+Connection2 = count(nt, pcms=nt$`Primary Connection To MS`)
+
+Connection$pcms = factor(Connection$pcms, levels = Connection$pcms[order(Connection$n)])
+Connection2$pcms = factor(Connection2$pcms, levels = Connection2$pcms[order(Connection2$n)])
+
+connect <- cbind(Connection,Connection2)
+connect <- cbind(Connection, Connection2[,2])
+
+Connect <- rowSums(connect[2:3]) 
+connect <- cbind(connect,Connect)
+
+connect <- connect[,c(1,4)]
+connect$Connect <- as.integer(connect$Connect)
+connect$pcms = factor(connect$pcms, levels = connect$pcms[order(connect$Connect)])
+connect <- arrange(connect, desc(Connect))
+
+names(connect) = c("Primary Connection to MS", "Number of Participants")
+
+```
+
+```{r fig 4, fig.height=5, fig.width=9}
+ggplot(connect, aes(`Primary Connection to MS`, `Number of Participants`))+
+   geom_bar(stat =  "identity", aes(`Primary Connection to MS`, fill = `Primary Connection to MS`))+
+   xlab("Primary Connection To MS") +
+   ylab("Number of Team Members") + coord_flip() + theme(axis.text=element_text(size=7),
+        axis.title=element_text(size=14,face="bold"))+
+   ggtitle("2013 NMSS Primary Connection to MS National & Not National Teams")+
+   scale_size_continuous()+ scale_y_continuous()
+ggsave("C:/Users/eva/Documents/ETM 527/Data Challenge 2018/National Teams/Visuals/Primary Connection to MS.png")
+
+
+```
+```{r}
+# SaveRDS
+saveRDS(nt,"National_Teams_cleaned")
+saveRDS(Not.National.Team,"Not_Nationa_Team_from_NT")
+
+```
+
+
+
