@@ -1,0 +1,29 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+Second Priority question 1
+
+```{r}
+
+digital.marketing = read.csv("D:/527- Data Mining/Google Analytics.csv")
+
+
+```
+
+```{r}
+
+library(ggplot2)
+
+```
+
+
+
+```{r}
+market =ggplot(digital.marketing, aes(Year, Conversions, fill = Platform))+theme(axis.title.x = element_text(face = "bold", vjust = 0.6))+geom_bar(stat = "identity", position = "dodge")+xlab('Year')+ylab('Total Conversions')+ggtitle('All conversions across different platforms')
+ggsave(filename="D:/527- Data Mining/TUN Data Challenge/Data Visualizations/digital_marketing.png", plot=market)
+
+```
+

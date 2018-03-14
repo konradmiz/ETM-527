@@ -1,0 +1,265 @@
+---
+title: "Competiting Events"
+author: "Ramya Priya"
+date: "March 7, 2018"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+Bike_events = readRDS("D:/527- Data Mining/TUN Data Challenge/Datasets/Bike_Events.rds")
+```
+
+### Best Buddies
+### In terms of markets and ACtive registrations.
+```{r}
+markets = c("MA","CA","FL")
+high.events.MA = Bike_events%>%
+           select(Security.Category.Name,State,Active.Registrations,Fiscal.Year)%>%
+           group_by(Security.Category.Name,State,Fiscal.Year)%>%
+           filter(State %in% markets)%>%
+           summarise(sum(Active.Registrations))
+
+```
+
+
+```{r}
+ggplot(high.events.MA, aes(high.events.MA$Fiscal.Year,high.events.MA$`sum(Active.Registrations)`, fill = high.events.MA$State))+geom_bar(stat =  "identity", position = "dodge")+theme(axis.title.x = element_text(face = "bold", vjust = 0.6))+xlab("year")+ylab("No of active registrations")+ggtitle("Active resgitrations for markets CA,FL,MA")
+```
+
+Explanation: The above markets doesnt show any huge impact. There is a slight decrease which might be for a different reason.
+
+### Interms of gift amount
+
+```{r}
+gifts.events.MA = Bike_events%>%
+                  select(Security.Category.Name,Total.of.All.Confirmed.Gifts...,Total.Team.Gifts...,Total.Event.Gifts...,Total.From.Participant...,Total.Not.From.Participant...,State,Fiscal.Year)%>%
+  group_by(Security.Category.Name,State,Fiscal.Year)%>%
+           filter(State %in% markets)
+
+```
+
+
+
+```{r}
+gifts.events.MA$X <- rowSums(gifts.events.MA[, 2:6])
+```
+
+
+```{r}
+options(scipen = 999)
+ggplot(gifts.events.MA, aes(gifts.events.MA$Fiscal.Year,gifts.events.MA$X, fill=gifts.events.MA$State))+geom_bar(stat = "identity", position = "dodge")+theme(axis.title.x = element_text(face = "bold", vjust = 0.6))+xlab("year")+ylab("Total Event Amount")+ggtitle("Total Amount raised for markets CA,FL,MA since 2013")
+```
+Even though Market MA, has slight decline in event registrations, there is an increase in the total amount that has been raised. 
+
+Therefore, competiting market(Best Buddies) is not causing any impact on Bike Ms for markets MA,CA, Fl
+
+### Peddle the Cause
+1. St. Louis
+2. San Diego
+
+The cause of this Bike event is to support Cancer patients.
+
+Analysis in terms of city. Bike MS doent have any events in St. Louis City. Hence Analyzing San Diego.
+```{r}
+peddle.events = Bike_events%>%
+select(Security.Category.Name,Fiscal.Year,Total.of.All.Confirmed.Gifts...,Total.Event.Gifts...,Total.From.Participant...,Total.Team.Gifts...,Total.Not.From.Participant...,City,State,Active.Registrations)%>%
+  filter(City =="San Diego")
+  
+
+```
+
+
+Adding total amount 
+
+```{r}
+peddle.events$TotalAmount = rowSums(peddle.events[, 3:7])
+```
+Active registrations for San Diego since 2013-2017
+
+```{r}
+ggplot(peddle.events,aes(peddle.events$Fiscal.Year,peddle.events$Active.Registrations))+geom_bar(stat = "identity", fill="tomato3")+theme(axis.text.x = element_text(face = "bold", vjust = "0.6"))+xlab("Year")+ylab("Active Registrations")+ggtitle("Total Active Registration for San Diego since 2013-2017")
+
+```
+
+Total Amount for San Diego
+```{r}
+ggplot(peddle.events,aes(peddle.events$Fiscal.Year,peddle.events$TotalAmount))+geom_bar(stat = "identity", fill="tomato3")+theme(axis.text.x = element_text(face = "bold", vjust =0.6))+xlab("Year")+ylab("Amount")+ggtitle("Total Event Amount raised for San Diego since 2013-2017")
+
+```
+
+### Pelatonia - OH
+
+The objective is to fund Life-saving Cancer Research.
+
+```{r}
+pelatonia.events = Bike_events%>%
+select(Security.Category.Name,Fiscal.Year,State,Active.Registrations,City)%>%
+  group_by(Security.Category.Name,Fiscal.Year,State,City)%>%
+  filter(State =="OH")%>%
+  summarise(sum(Active.Registrations))
+```
+
+
+```{r}
+ggplot(pelatonia.events,aes(pelatonia.events$Fiscal.Year,pelatonia.events$`sum(Active.Registrations)`,fill=pelatonia.events$Security.Category.Name))+geom_bar(stat =  "identity", position = "dodge")+theme(axis.title.x = element_text(face = "bold", vjust = 0.6))+xlab("year")+ylab("No of active registrations")+ggtitle("Active resgistrations for OH")
+```
+Interm of gift Amount
+
+```{r}
+pelatonia.gifts = Bike_events%>%
+select(Security.Category.Name,Total.of.All.Confirmed.Gifts...,Total.Team.Gifts...,Total.Event.Gifts...,Total.From.Participant...,Total.Not.From.Participant...,State,Fiscal.Year,City)%>%
+  group_by(Security.Category.Name,State,Fiscal.Year,City)%>%
+  filter(State=="OH")
+```
+
+```{r}
+pelatonia.gifts$TotalAmount = rowSums(pelatonia.gifts[,2:6])
+pelatonia.gifts.total = pelatonia.gifts%>% summarise(sum(TotalAmount))
+```
+
+```{r}
+ggplot(pelatonia.gifts.total,aes(pelatonia.gifts.total$Fiscal.Year,pelatonia.gifts.total$`sum(TotalAmount)`,fill=pelatonia.gifts.total$City))+geom_bar(stat =  "identity",position = "dodge")+theme(axis.title.x = element_text(face = "bold", vjust = 0.6))+xlab("year")+ylab("Amount")+ggtitle("Total Amount raised by Event from OH market")
+```
+
+Even though there is steady decline in terms of participants and amount, Pelatonia event rides are mostly conducted in the Cities such as Columbus, Gambier and New Albany. These cities are not conflicting Bike MS events as they dont offer in Events in those cities. 
+
+We have one event conducted in Albany city in 2013 and 2014, and there is an increase in the funds. However, the event has not been offered since 2015. 
+
+### PanMass Challenge - Boston
+
+```{r}
+Panmass.events = Bike_events%>%
+select(Security.Category.Name,Fiscal.Year,Total.of.All.Confirmed.Gifts...,Total.Event.Gifts...,Total.From.Participant...,Total.Team.Gifts...,Total.Not.From.Participant...,City,State,Active.Registrations,Public.Event.Name)%>%
+  filter(City =="Boston")
+
+```
+
+Total Amount for Boston City
+
+```{r}
+Panmass.events$TotalAmount = rowSums(Panmass.events[,3:7])
+```
+
+
+```{r}
+ggplot(Panmass.events,aes(Panmass.events$Fiscal.Year,Panmass.events$Active.Registrations,fill=Panmass.events$Public.Event.Name))+geom_bar(stat =  "identity",position = "dodge")+theme(axis.title.x = element_text(face = "bold", vjust = 0.6))+xlab("year")+ylab("Active Registrations")+ggtitle("Participants from Boston events since 2013-2017")
+
+```
+
+```{r}
+ggplot(Panmass.events,aes(Panmass.events$Fiscal.Year,Panmass.events$TotalAmount, fill=Panmass.events$Public.Event.Name))+geom_bar(stat =  "identity",position = "dodge")+theme(axis.title.x = element_text(face = "bold", vjust = 0.6))+xlab("year")+ylab("Amount")+ggtitle("Amount raised from Boston event 2013-2017")
+
+```
+
+In 2016, BikeMS conducted only registration in boston and raised some amount during the registrations. However, in the last event which is conducted in Boston 2015,raised higher amounts compared to 2014.
+
+The objective of PanMass challenge raise funds for public health care and for cancer research. 
+
+### ADA - Tour de Cure
+The objective of tour de cure is raise the funds for supporting American Diabetes Association.
+
+```{r}
+ADA.markets = c("HI","AZ","FL","CA","TX","VA","KS","KY","KY","WA","GA","MA","NY","NJ","IL","OK","MN","RI","MD","ME","PA","IA","OR","AK","CO","MO","NC","UT","OH","LA")
+
+ADA.events = Bike_events%>%
+           select(Security.Category.Name,State,Active.Registrations,Fiscal.Year)%>%
+           group_by(Security.Category.Name,State,Fiscal.Year)%>%
+           filter(State %in% ADA.markets)%>%
+           summarise(sum(Active.Registrations))
+
+write.table(ADA.events,"events_allmarkets.csv",sep = ",")
+```
+
+
+```{r}
+ggplot(ADA.events, aes(ADA.events$Fiscal.Year,ADA.events$`sum(Active.Registrations)`, fill = ADA.events$State))+geom_bar(stat =  "identity", position = "dodge")+theme(axis.title.x = element_text(face = "bold", vjust = 0.6))+xlab("year")+ylab("No of active registrations")+ggtitle("Active resgitrations for markets different markets")
+```
+
+```{r}
+ADA.events.funds = Bike_events%>%
+  select(Security.Category.Name,Fiscal.Year,Total.of.All.Confirmed.Gifts...,Total.Event.Gifts...,Total.From.Participant...,Total.Team.Gifts...,Total.Not.From.Participant...,City,State)%>%
+  filter(State %in% ADA.markets)
+ADA.events.funds$TotalAmount = rowSums(ADA.events.funds[,3:7])
+  
+```
+
+
+```{r}
+ADA.total.funds = ADA.events.funds%>%
+   select(Security.Category.Name,Fiscal.Year,Total.of.All.Confirmed.Gifts...,Total.Event.Gifts...,Total.From.Participant...,Total.Team.Gifts...,Total.Not.From.Participant...,City,State,TotalAmount)%>%
+  group_by(Security.Category.Name,Fiscal.Year,State)%>%
+  summarise(sum(TotalAmount))
+write.table(ADA.total.funds,"ADA.funds.csv", sep = ",")
+```
+
+
+
+### See the visualization of Tableau from here on wards
+1. Some of these markets have maintained the same pattern while some markets have very slight decline(this is not intense). As this cause is for Diabetes, we cannot conclude that ADA, impacts on bike MS.
+
+
+
+## St. Jude Children's Research Hospital
+
+fundraising for pediatric cancer. They have only walk/run events but no Bike Events. 
+This is offered in states such as WA,VI,TX,TN,SC,PN,OK,OH,NC,NY,NM,NJ,NV,Mi,MN,MA,LO,KY,IN,IL,GA,FL,DC,CN,Co,CA,Al,Ar,CA
+And no significant change in the state in terms of both registrations and total amount raised.
+
+###   JDRF Ride to Cure Diabetes
+The objective is to cure diabetes by bike events. Offered in FL, CA,WI,CO,NM,NY (These markets have no decline in terms of funds and slight decline in participants)
+
+### Cycle for Life - Cystic Fibrosis Foundation
+
+The objective is to spread the awareness of genetic disease, fibrosis foundation. This is offered in almost all  the states. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+markets = c("TX","PA","MN","NY","MA","NC","CO","OH","CA","KS","MO","WA","CA","IL","NJ")
+All.events.registrations = Bike_events%>%
+  select(Security.Category.Name,Fiscal.Year,State,Active.Registrations)%>%
+  group_by(Security.Category.Name,Fiscal.Year,State)%>%
+  summarise(sum(Active.Registrations))%>%
+  filter(State %in% markets)
+write.table(All.events.registrations,"Events.registrations.State.csv", sep = ",")
+
+```
+
+```{r}
+All.events.funds = Bike_events%>%
+  select(Security.Category.Name,Fiscal.Year,Total.of.All.Confirmed.Gifts...,Total.Event.Gifts...,Total.From.Participant...,Total.Team.Gifts...,Total.Not.From.Participant...,City,State)%>%
+  group_by(Security.Category.Name,Fiscal.Year,State)%>%
+   filter(State %in% markets)
+```
+
+```{r}
+All.events.funds$TotalAmount = rowSums(All.events.funds[,3:7])
+
+```
+
+```{r}
+All.events.funds=All.events.funds%>%
+  select(Security.Category.Name,Fiscal.Year,Total.of.All.Confirmed.Gifts...,Total.Event.Gifts...,Total.From.Participant...,Total.Team.Gifts...,Total.Not.From.Participant...,City,State,TotalAmount)%>%
+  group_by(Security.Category.Name,Fiscal.Year,State)%>%
+  summarise(sum(TotalAmount))
+```
+
+```{r}
+write.table(All.events.funds,"All.events.funds.csv", sep = ",")
+```
+
