@@ -1,0 +1,50 @@
+---
+title: "Competiting Events"
+author: "Ramya Priya"
+date: "March 7, 2018"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+Bike_events = readRDS("D:/527- Data Mining/TUN Data Challenge/Datasets/Bike_Events.rds")
+```
+
+```{r}
+markets = c("TX","PA","MN","NY","MA","NC","CO","OH","CA","KS","MO","WA","CA","IL","NJ")
+All.events.registrations = Bike_events%>%
+  select(Security.Category.Name,Fiscal.Year,State,Active.Registrations)%>%
+  group_by(Security.Category.Name,Fiscal.Year,State)%>%
+  summarise(sum(Active.Registrations))%>%
+  filter(State %in% markets)
+write.table(All.events.registrations,"Events.registrations.State.csv", sep = ",")
+
+```
+
+```{r}
+All.events.funds = Bike_events%>%
+  select(Security.Category.Name,Fiscal.Year,Total.of.All.Confirmed.Gifts...,Total.Event.Gifts...,Total.From.Participant...,Total.Team.Gifts...,Total.Not.From.Participant...,City,State)%>%
+  group_by(Security.Category.Name,Fiscal.Year,State)%>%
+   filter(State %in% markets)
+```
+
+```{r}
+All.events.funds$TotalAmount = rowSums(All.events.funds[,3:7])
+
+```
+
+```{r}
+All.events.funds=All.events.funds%>%
+  select(Security.Category.Name,Fiscal.Year,Total.of.All.Confirmed.Gifts...,Total.Event.Gifts...,Total.From.Participant...,Total.Team.Gifts...,Total.Not.From.Participant...,City,State,TotalAmount)%>%
+  group_by(Security.Category.Name,Fiscal.Year,State)%>%
+  summarise(sum(TotalAmount))
+```
+
+```{r}
+write.table(All.events.funds,"All.events.funds.csv", sep = ",")
+```
+
